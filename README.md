@@ -25,7 +25,7 @@ dagger input yaml parameters -f app.yaml
 dagger input text kubeconfig -f "$HOME"/.kube/config
 ```
 
-Run:
+Run the following command to execute plans to apply k8s resources:
 ```
 dagger up
 ```
@@ -33,9 +33,13 @@ dagger up
 Output:
 
 ```
+[✔] applyResources."1"
+[✔] applyResources."0"
+[✔] applyResources."2"
+[✔] applyResources."3"
 ```
 
-Run:
+Run the following command to query the rendered k8s resources:
 ```
 dagger query resources
 ```
@@ -43,6 +47,38 @@ dagger query resources
 Output:
 
 ```
+[
+  {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "annotations": {
+        "dev.nocalhost": "name: nocalhost-api\nserviceType: deployment\ncontainers:\n\t- name: nocalhost-api\n\t\tdev:\n\t\t\timage: ghcr.io/hongchaodeng/ai-demo"
+      },
+      "labels": {
+        "app": "ai-demo",
+        "env": "qa"
+      },
+      "name": "ai-demo",
+      "namespace": "default"
+    },
+    ...
+  },
+  {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+      "labels": {
+        "app": "ai-demo",
+        "env": "qa"
+      },
+      "name": "ai-demo",
+      "namespace": "default"
+    },
+    ...
+  },
+  ...
+]
 ```
 
 ## Add a new capability
