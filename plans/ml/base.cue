@@ -1,53 +1,28 @@
 package ml
 
-import (
-	"alpha.dagger.io/dagger"
-)
-
-// set with `dagger input text kubeconfig -f "$HOME"/.kube/config -e kube`
-kubeconfig: {string} @dagger(input)
-
 parameters: {
 	metadata: {
-		name:      string & dagger.#Input
+		name:      string
 		namespace: string | *"default"
 	}
 
-	// build: {
-	//  source: dagger.#Artifact & dagger.#Input
-	//  push:   {
-	//   target: string
-	//   auth: {
-	//    username: string
-	//    secret:   string
-	//   } | *null
-	//  }
-	//  image:    docker.#Build & {
-	//   source: build.source
-	//  }
-	//  _push: docker.#Push & {
-	//   source: image
-	//   target: push.target
-	//   if build.push.auth != null {
-	//    auth: {
-	//     username: build.push.auth.username
-	//     secret:   build.push.auth.secret
-	//    }
-	//   }
-	//  }
-	// }
 
-	trainModel: {
-		container:    #container
-		backoffLimit: int | *1
-	}
+	trainModel: #trainModel
 
-	serveModel: {
-		env:       string
-		container: #container
-	}
+	serveModel: #serveModel
+}
 
-	serveModel: autoscaling: #autoscaling
+#trainModel: {
+	container:    #container
+	backoffLimit: int | *1
+	...
+}
+
+#serveModel: {
+	env:         string
+	container:   #container
+	autoscaling: #autoscaling
+	...
 }
 
 #container: {

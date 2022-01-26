@@ -2,10 +2,6 @@ metadata:
   name: ai-demo
   namespace: default
 
-# build:
-#   source: ./
-#   push:
-#     target: ghcr.io/hongchaodeng/ai-demo
 
 trainModel:
   container:

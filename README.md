@@ -18,16 +18,31 @@ dagger init
 dagger new test -p plans/ml
 ```
 
-Initialize parameters:
+Input parameters:
 
 ```
 dagger input yaml parameters -f app.yaml
+dagger input text kubeconfig -f "$HOME"/.kube/config
 ```
 
 Run:
 ```
 dagger up
+```
+
+Output:
+
+```
+```
+
+Run:
+```
 dagger query resources
+```
+
+Output:
+
+```
 ```
 
 ## Add a new capability
