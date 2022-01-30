@@ -4,28 +4,58 @@
 
 对于 AI 应用开发者来说，操作流程如下：
 
-- 写业务逻辑 code: train.py + api.py
-- 配置下 [app.yaml](./app.yaml)
+- 写业务逻辑代码，即 src/ 里的文件
+- 配置 [app.yaml](./app.yaml)
 - 剩下的一键 `dagger up` 即可，包括
   - build & deploy orchestration
   - infrastructure resources rendering
 
+
+## Prerequisite
+
+Install [derrick](https://github.com/hongchaodeng/derrick):
+
+```
+```
+
 ## Quickstart
 
-If you have not setup Dagger environment, run
+Generate deployment manifest scaffolds by detecting the code framework:
+
+```
+derrick gen
+```
+
+Just git commit these new changes and trigger Github actions to run CICD:
+
+```
+git add .
+git commit -m "ship it"
+git push
+```
+
+### Behind the scene
+
+It first sets up a Dagger environment:
+
 ```
 dagger init
-dagger new test -p plans/ml
+dagger new test -p plans/ai-demo
 ```
 
-Input parameters:
+Then it inputs parameter values:
 
 ```
+dagger input text kubeconfig -f ${KUBECONFIG}
 dagger input yaml parameters -f app.yaml
-dagger input text kubeconfig -f "$HOME"/.kube/config
+dagger input dir source ./src/
+dagger input text push.target ghcr.io/hongchaodeng/ai-demo
+dagger input text push.auth.username hongchaodeng
+dagger input secret push.auth.secret ${GITHUB_TOKEN}
 ```
 
-Run the following command to execute plans to apply k8s resources:
+Then it runs the following command to build and deploy the app to k8s:
+
 ```
 dagger up
 ```
@@ -33,95 +63,44 @@ dagger up
 Output:
 
 ```
+[✔] source
+[✔] image
+[✔] push.source
+[+] push.push
 [✔] applyResources."1"
 [✔] applyResources."0"
 [✔] applyResources."2"
 [✔] applyResources."3"
 ```
 
-Run the following command to query the rendered k8s resources:
-```
-dagger query resources
-```
-
-Output:
-
-```
-[
-  {
-    "apiVersion": "apps/v1",
-    "kind": "Deployment",
-    "metadata": {
-      "annotations": {
-        "dev.nocalhost": "name: nocalhost-api\nserviceType: deployment\ncontainers:\n\t- name: nocalhost-api\n\t\tdev:\n\t\t\timage: ghcr.io/hongchaodeng/ai-demo"
-      },
-      "labels": {
-        "app": "ai-demo",
-        "env": "qa"
-      },
-      "name": "ai-demo",
-      "namespace": "default"
-    },
-    ...
-  },
-  {
-    "apiVersion": "v1",
-    "kind": "Service",
-    "metadata": {
-      "labels": {
-        "app": "ai-demo",
-        "env": "qa"
-      },
-      "name": "ai-demo",
-      "namespace": "default"
-    },
-    ...
-  },
-  ...
-]
-```
 
 ## Add a new capability
 
-The [monitoring.cue](./plans/ml/monitoring.cue) is an example to add a new capability to an existing definition:
+The [autoscaling.cue](./plans/ai-demo/autoscaling.cue) is an example to add a new capability to existing definitions:
 
-```go
+```
 package ml
 
-// This will register the new capability and expose it to users
-parameters: serveModel: monitoring: {
-  groups: [...#monitorGroup]
+// Dynamically adds a capability and exposes the parameters to the app.
+parameters: #deploy: scaling:
+	{
+		auto: {
+			min:        int
+			max:        int
+			cpuPercent: int
+		}
+	} | {
+		manual: replicas: int
+	}
+
+if parameters.deploy.scaling.auto != _|_ {
+	generateResource: "autoscaling/v2beta1": HorizontalPodAutoscaler: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": spec: {
+		...
+	}
 }
 
-#monitorGroup: {
-  name: string
-  rules: [...#monitorRule]
-}
-
-#monitorRule: {
-  alert: string
-  expr: string
-  for: string
-  annotations: [string]: string
+if parameters.deploy.scaling.manual != _|_ {
+	generateResource: "apps/v1": Deployment: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": spec: replicas: parameters.deploy.scaling.manual.replicas
 }
 ```
-
-Then you can use the capability in `app.yaml`:
-
-```yaml
-serveModel:
-  ...
-
-  monitoring:
-    groups:
-      - name: example
-        rules:
-          - alert: APIHighRequestLatency
-            expr: api_http_request_latencies_second{quantile="0.5"} > 1
-            for: 10m
-            annotations:
-              summary: "High request latency on {{ $labels.instance }}"
-              description: "{{ $labels.instance }} has a median request latency above 1s (current value: {{ $value }}s)"
-```
-
 

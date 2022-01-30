@@ -2,11 +2,8 @@ name: Docker
 
 on:
   push:
-    # Publish `main` as Docker `latest` image.
     branches:
       - "release"
-  # Run tests for any PRs.
-  pull_request:
 
 jobs:
   # Push image to Docker Registry
