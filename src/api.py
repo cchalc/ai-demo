@@ -78,6 +78,10 @@ def score():
     
     return {'Score LDA': score_lda, 'Score Neural Network': score_nn}
 
+@app.route('/healthz')
+def healthy():
+    return ''
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
 

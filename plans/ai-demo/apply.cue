@@ -13,6 +13,7 @@ applyResources: {
 	for i, resource in resources {
 		"\(i)": kubernetes.#Resources & {
 			"kubeconfig": kubeconfig
+			version:      "v1.23.3"
 			namespace:    resource.metadata.namespace
 			manifest:     json.Marshal(resource)
 		}

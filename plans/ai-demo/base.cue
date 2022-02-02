@@ -23,23 +23,14 @@ parameters: {
 	...
 }
 
-generateResource: [ApiVersion=_]: [Kind=_]: [Namespace=_]: [Name=_]: {
-	apiVersion: ApiVersion
-	kind:       Kind
+generateResource: "apps/v1:Deployment:\(parameters.metadata.namespace):\(parameters.metadata.name)": {
+	apiVersion: "apps/v1"
+	kind:       "Deployment"
 	metadata: {
-		name:      Name
-		namespace: Namespace
-		labels: {
-			app: Name
-			...
-		}
-		...
-	}
-	...
-}
-
-generateResource: "apps/v1": Deployment: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": {
-	metadata: annotations: "dev.nocalhost": """
+		name:      parameters.metadata.name
+		namespace: parameters.metadata.namespace
+		labels: "app.kubernetes.io/name": parameters.metadata.name
+		annotations: "dev.nocalhost":     """
 name: \(parameters.metadata.name)
 serviceType: deployment
 containers:
@@ -47,8 +38,9 @@ containers:
   dev:
     image: \(push.ref)
 """
+	}
+
 	spec: {
-		replicas: 1
 		selector: matchLabels: app: parameters.metadata.name
 		template: {
 			metadata: labels: app: parameters.metadata.name
@@ -66,29 +58,53 @@ containers:
 				}]
 				resources: {
 					requests: {
-						memory: "256Mi"
-						cpu:    "250m"
-					}
-					limits: {
-						memory: "512Mi"
+						memory: "1Gi"
 						cpu:    "500m"
 					}
+					limits: {
+						memory: "2Gi"
+						cpu:    "1000m"
+					}
+				}
+				livenessProbe: {
+					httpGet: {
+						path: "/healthz"
+						port: parameters.deploy.port
+					}
+					initialDelaySeconds: 3
+					periodSeconds:       3
 				}
 			}]
 		}
 	}
 }
 
-generateResource: v1: Service: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": spec: {
-	type: "ClusterIP"
-	ports: [{
-		port:       parameters.deploy.port
-		targetPort: parameters.deploy.port
-	}]
-	selector: app: parameters.metadata.name
+generateResource: "v1:Service:\(parameters.metadata.namespace):\(parameters.metadata.name)": {
+	apiVersion: "v1"
+	kind:       "Service"
+	metadata: {
+		name:      parameters.metadata.name
+		namespace: parameters.metadata.namespace
+		labels: "app.kubernetes.io/name": parameters.metadata.name
+	}
+	spec: {
+		type: "ClusterIP"
+		ports: [{
+			port:       parameters.deploy.port
+			targetPort: parameters.deploy.port
+		}]
+		selector: app: parameters.metadata.name
+	}
 }
 
-generateResource: "networking.k8s.io/v1": Ingress: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": {
+generateResource: "networking.k8s.io/v1:Ingress:\(parameters.metadata.namespace):\(parameters.metadata.name)": {
+	apiVersion: "networking.k8s.io/v1"
+	kind:       "Ingress"
+	metadata: {
+		name:      parameters.metadata.name
+		namespace: parameters.metadata.namespace
+		labels: "app.kubernetes.io/name": parameters.metadata.name
+	}
 	metadata: annotations: "nginx.ingress.kubernetes.io/rewrite-target": "/"
 	spec: rules: [{
 		http: paths: [{
@@ -103,13 +119,7 @@ generateResource: "networking.k8s.io/v1": Ingress: "\(parameters.metadata.namesp
 }
 
 resources: [
-	for _, v1 in generateResource {
-		for _, v2 in v1 {
-			for _, v3 in v2 {
-				for _, v4 in v3 {
-					v4
-				}
-			}
-		}
+	for _, v in generateResource {
+		v
 	},
 ]

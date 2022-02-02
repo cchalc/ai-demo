@@ -13,9 +13,18 @@
 
 ## Prerequisite
 
-Install [derrick](https://github.com/hongchaodeng/derrick):
+Install [derrick](https://github.com/alibaba/derrick):
 
+```bash
+# Mac
+
+# Linux
 ```
+
+Install [dagger](https://dagger.io/):
+
+```bash
+TBD...
 ```
 
 ## Quickstart
@@ -26,29 +35,25 @@ Generate deployment manifest scaffolds by detecting the code framework:
 derrick gen
 ```
 
-Just git commit these new changes and trigger Github actions to run CICD:
+This will generate:
 
-```
-git add .
-git commit -m "ship it"
-git push
-```
+- .github/: Github action CICD pipelines that executes the Dagger plans.
+- plans/: Dagger plans to build and deploy the app.
 
-### Behind the scene
 
-It first sets up a Dagger environment:
+Run the following command to set up a Dagger environment:
 
 ```
 dagger init
 dagger new test -p plans/ai-demo
 ```
 
-Then it inputs parameter values:
+Then input user values:
 
 ```
-dagger input text kubeconfig -f ${KUBECONFIG}
 dagger input yaml parameters -f app.yaml
 dagger input dir source ./src/
+dagger input text kubeconfig -f ${KUBECONFIG}
 dagger input text push.target ghcr.io/hongchaodeng/ai-demo
 dagger input text push.auth.username hongchaodeng
 dagger input secret push.auth.secret ${GITHUB_TOKEN}
@@ -94,13 +99,15 @@ parameters: #deploy: scaling:
 	}
 
 if parameters.deploy.scaling.auto != _|_ {
-	generateResource: "autoscaling/v2beta1": HorizontalPodAutoscaler: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": spec: {
+	generateResource: "autoscaling/v1:HorizontalPodAutoscaler:\(parameters.metadata.namespace):\(parameters.metadata.name)": {
+		apiVersion: "autoscaling/v1"
+		kind:       "HorizontalPodAutoscaler"
 		...
 	}
 }
 
 if parameters.deploy.scaling.manual != _|_ {
-	generateResource: "apps/v1": Deployment: "\(parameters.metadata.namespace)": "\(parameters.metadata.name)": spec: replicas: parameters.deploy.scaling.manual.replicas
+  // directly updates the deployment resource's replicas
+	generateResource: "apps/v1:Deployment:\(parameters.metadata.namespace):\(parameters.metadata.name)": spec: replicas: parameters.deploy.scaling.manual.replicas
 }
 ```
-
