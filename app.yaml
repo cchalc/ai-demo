@@ -4,6 +4,7 @@ metadata:
   stack: python-jupyter
 
 build:
+  git: https://github.com/hongchaodeng/ai-demo-source
   env:
     MODEL_DIR: /home/jovyan
     MODEL_FILE_LDA: clf_lda.joblib

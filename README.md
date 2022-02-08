@@ -1,45 +1,8 @@
-# AI 应用云原生最佳实践
+# AI App Cloud Native Best Practice 
 
-这个案例包含了 [训练任务](train.py) 和 [推理服务](api.py) 两个应用。
-
-对于 AI 应用开发者来说，操作流程如下：
-
-- 写业务逻辑代码，即 src/ 里的文件
-- 配置 [app.yaml](./app.yaml)
-- 剩下的一键 `dagger up` 即可，包括
-  - build & deploy orchestration
-  - infrastructure resources rendering
-
-
-## Prerequisite
-
-Install [derrick](https://github.com/alibaba/derrick):
-
-```bash
-# Mac
-
-# Linux
-```
-
-Install [dagger](https://dagger.io/):
-
-```bash
-TBD...
-```
+This contains the deployment code that builds and deploy an [AI application](https://github.com/hongchaodeng/ai-demo-source).
 
 ## Quickstart
-
-Generate deployment manifest scaffolds by detecting the code framework:
-
-```
-derrick gen
-```
-
-This will generate:
-
-- .github/: Github action CICD pipelines that executes the Dagger plans.
-- plans/: Dagger plans to build and deploy the app.
-
 
 Run the following command to set up a Dagger environment:
 
@@ -50,9 +13,10 @@ dagger new test -p plans/ai-demo
 
 Then input user values:
 
+> NOTE: You need to specify $KUBECONFIG, your own docker image name and credentials.
+
 ```
 dagger input yaml parameters -f app.yaml
-dagger input dir source ./src/
 dagger input text kubeconfig -f ${KUBECONFIG}
 dagger input text push.target ghcr.io/hongchaodeng/ai-demo
 dagger input text push.auth.username hongchaodeng
@@ -68,14 +32,14 @@ dagger up
 Output:
 
 ```
-[✔] source
 [✔] image
 [✔] push.source
-[+] push.push
+[✔] push.push
 [✔] applyResources."1"
 [✔] applyResources."0"
 [✔] applyResources."2"
 [✔] applyResources."3"
+[✔] patchGrafana
 ```
 
 
