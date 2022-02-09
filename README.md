@@ -35,10 +35,11 @@ Output:
 [✔] image
 [✔] push.source
 [✔] push.push
-[✔] applyResources."1"
 [✔] applyResources."0"
+[✔] applyResources."1"
 [✔] applyResources."2"
 [✔] applyResources."3"
+[✔] applyResources."4"
 [✔] patchGrafana
 ```
 
