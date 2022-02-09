@@ -2,6 +2,11 @@
 
 This contains the deployment code that builds and deploy an [AI application](https://github.com/hongchaodeng/ai-demo-source).
 
+## Prerequisite
+
+- Kubernetes cluster ready
+- [kube-prometheus](https://prometheus-operator.dev/docs/prologue/quick-start/) installed
+
 ## Quickstart
 
 Run the following command to set up a Dagger environment:
@@ -41,7 +46,14 @@ Output:
 [✔] applyResources."3"
 [✔] applyResources."4"
 [✔] patchGrafana
+Output                                                                                        Value                                                                                                          Description
+generateResource."apps/v1:Deployment:default:ai-demo".spec.template.spec.containers[0].image  "ghcr.io/hongchaodeng/ai-demo:latest@sha256:ab8f456c53c2938e81914250aab0d862f7ee6568e6767c8dafd6be818dc0bbcd"  -
+resources[0].spec.template.spec.containers[0].image                                           "ghcr.io/hongchaodeng/ai-demo:latest@sha256:ab8f456c53c2938e81914250aab0d862f7ee6568e6767c8dafd6be818dc0bbcd"  -
+push.ref                                                                                      "ghcr.io/hongchaodeng/ai-demo:latest@sha256:ab8f456c53c2938e81914250aab0d862f7ee6568e6767c8dafd6be818dc0bbcd"  Image ref
+push.digest                                                                                   "sha256:ab8f456c53c2938e81914250aab0d862f7ee6568e6767c8dafd6be818dc0bbcd"                                      Image digest
 ```
+
+
 
 
 ## Add a new capability

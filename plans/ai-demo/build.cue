@@ -21,7 +21,7 @@ image: os.#Container & {
 
 	command: #"""
 git clone \#(parameters.build.git)
-cd \#(codedir)
+mv \#(codedir)/* ./
 pip install -r requirements.txt
 \#(parameters.build.run)
 """#
