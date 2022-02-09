@@ -18,6 +18,7 @@ parameters: {
 }
 
 #deploy: {
+	git: string
 	cmd: [...string]
 	port: int
 	...
@@ -37,6 +38,7 @@ containers:
 - name: \(parameters.metadata.name)
   dev:
     image: \(push.ref)
+		gitUrl: \(parameters.build.git)
 """
 	}
 
