@@ -117,6 +117,9 @@ We should see that it automatically creates a dashboard for the application:
 
 ### Debug Remotely
 
+The above workflow automatically creates a Nocalhost config for remote development.
+You can connect to it as following:
+
 > Install [Nocalhost VSCode plugin](https://nocalhost.dev/docs/quick-start/) first
 
 In VSCode, Open Nocalhost panel, select the `ai-demo` Deployment to start dev-container:
