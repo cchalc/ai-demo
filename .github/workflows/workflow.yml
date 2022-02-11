@@ -6,9 +6,12 @@ on:
       - "release"
 
 jobs:
-  # Push image to Docker Registry
-  push:
+  deployment:
     runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      GITHUB_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout code
@@ -17,13 +20,16 @@ jobs:
       uses: dagger/dagger-action@v1
       with:
         install-only: true
-    - name: Dagger
+    - name: Dagger Setup
       run: |
         dagger init
         dagger new test -p plans/ai-demo
         dagger input yaml parameters -f app.yaml
-        dagger input text kubeconfig ${KUBECONFIG}
-        dagger input text push.target ghcr.io/${GHCR_USERNAME}/ai-demo
-        dagger input text push.auth.username ${GHCR_USERNAME}
-        dagger input secret push.auth.secret ${GITHUB_TOKEN}
+        echo $KUBECONFIG > kubeconfig
+        dagger input text kubeconfig -f ./kubeconfig
+        dagger input text push.target ghcr.io/$GITHUB_USERNAME/ai-demo
+        dagger input text push.auth.username $GITHUB_USERNAME
+        dagger input secret push.auth.secret $GITHUB_TOKEN
+    - name: Dagger Up
+      run: |
         dagger up
