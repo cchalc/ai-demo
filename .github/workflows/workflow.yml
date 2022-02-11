@@ -9,34 +9,21 @@ jobs:
   # Push image to Docker Registry
   push:
     runs-on: ubuntu-latest
-    env:
-      # Set the Docker registry to push to.
-      IMAGE: ghcr.io/hongchaodeng/ai-demo
 
     steps:
-    - name: Generate build ID
-      id: prep
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install Dagger
+      uses: dagger/dagger-action@v1
+      with:
+        install-only: true
+    - name: Dagger
       run: |
-          branch=${GITHUB_REF##*/}
-          sha=${GITHUB_SHA::8}
-          ts=$(date +%s)
-          echo "::set-output name=BUILD_ID::${branch}-${sha}-${ts}"  
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      with:
-          registry: ghcr.io
-          username: ${{ secrets.GHCR_USERNAME }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build and publish container image with tag
-      uses: docker/build-push-action@v2
-      with:
-          push: true
-          tags: |
-            ${{ env.IMAGE }}:${{ steps.prep.outputs.BUILD_ID }}
+        dagger init
+        dagger new test -p plans/ai-demo
+        dagger input yaml parameters -f app.yaml
+        dagger input text kubeconfig ${KUBECONFIG}
+        dagger input text push.target ghcr.io/${GHCR_USERNAME}/ai-demo
+        dagger input text push.auth.username ${GHCR_USERNAME}
+        dagger input secret push.auth.secret ${GITHUB_TOKEN}
+        dagger up
