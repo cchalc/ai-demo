@@ -1,6 +1,7 @@
 metadata:
   name: ai-demo
   namespace: default
+  region: ["Beijing", "Shenzhen"]
   stack: python-jupyter
 
 build:

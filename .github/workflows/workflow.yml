@@ -32,4 +32,4 @@ jobs:
         dagger input secret push.auth.secret $GITHUB_TOKEN
     - name: Dagger Up
       run: |
-        dagger up
+        dagger up --log-format plain -l debug
